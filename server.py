@@ -469,10 +469,17 @@ def main():
 
     os.makedirs("static", exist_ok=True)
 
+    host_display = "localhost" if args.host in ("0.0.0.0", "127.0.0.1") else args.host
+    url_display  = f"http://{host_display}:{args.port}"
     print(f"\n{'═'*56}")
     print(f"  DRONEWAR GAME SERVER")
-    print(f"  URL : http://{args.host}:{args.port}")
-    print(f"  Open your browser to start a game.")
+    print(f"{'═'*56}")
+    print(f"")
+    print(f"  Open this URL in your browser:")
+    print(f"")
+    print(f"      {url_display}")
+    print(f"")
+    print(f"  (trying to open automatically...)")
     print(f"{'═'*56}\n")
 
     if args.scenario and args.human:
@@ -482,11 +489,21 @@ def main():
         init_game(args.scenario, red_t, blue_t, seed)
         print(f"  Auto-started: {args.scenario}  red={red_t}  blue={blue_t}  seed={seed}\n")
 
-    import threading, webbrowser, time
+    import threading, time
     url = f"http://{args.host}:{args.port}"
+
     def _open_browser():
-        time.sleep(1.2)   # let Flask finish binding before the tab loads
-        webbrowser.open(url)
+        time.sleep(1.2)
+        try:
+            import webbrowser
+            opened = webbrowser.open(url)
+            if not opened:
+                raise RuntimeError("webbrowser.open returned False")
+        except Exception:
+            # No browser available (headless server, WSL, container, etc.)
+            # The URL is already printed above — user opens it manually.
+            pass
+
     threading.Thread(target=_open_browser, daemon=True).start()
 
     app.run(host=args.host, port=args.port, debug=False, threaded=True)

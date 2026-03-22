@@ -43,14 +43,27 @@ def main():
 
     print(f"\n{'═'*52}")
     print(f"  DRONEWAR")
-    print(f"  Starting server on {url}")
+    print(f"{'═'*52}")
+    print(f"")
+    print(f"  Open this URL in your browser:")
+    print(f"")
+    print(f"      {url}")
+    print(f"")
+    print(f"  (trying to open automatically...)")
     print(f"  Close this window to quit.")
     print(f"{'═'*52}\n")
 
-    # Open browser after a short delay to let Flask bind
+    # Open browser after a short delay to let Flask bind.
+    # Wrapped in try/except — on headless/WSL/server systems webbrowser
+    # raises an error; the URL is already printed so the user can open manually.
     def _open():
         time.sleep(1.2)
-        webbrowser.open(url)
+        try:
+            opened = webbrowser.open(url)
+            if not opened:
+                raise RuntimeError("no browser found")
+        except Exception:
+            pass
 
     threading.Thread(target=_open, daemon=True).start()
 
