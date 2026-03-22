@@ -45,7 +45,8 @@ from dronewar.agents.agents import (
 )
 from dronewar.scenarios.scenarios import SCENARIOS
 
-app = Flask(__name__, static_folder="static")
+_HERE = os.path.dirname(os.path.abspath(__file__))
+app = Flask(__name__, static_folder=os.path.join(_HERE, "static"))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -469,17 +470,13 @@ def main():
 
     os.makedirs("static", exist_ok=True)
 
-    host_display = "localhost" if args.host in ("0.0.0.0", "127.0.0.1") else args.host
-    url_display  = f"http://{host_display}:{args.port}"
+    url = f"http://localhost:{args.port}"
+
     print(f"\n{'═'*56}")
-    print(f"  DRONEWAR GAME SERVER")
-    print(f"{'═'*56}")
-    print(f"")
-    print(f"  Open this URL in your browser:")
-    print(f"")
-    print(f"      {url_display}")
-    print(f"")
-    print(f"  (trying to open automatically...)")
+    print(f"  DRONEWAR")
+    print(f"{'─'*56}")
+    print(f"  URL:  {url}")
+    print(f"  Open the URL above if the browser doesn't launch.")
     print(f"{'═'*56}\n")
 
     if args.scenario and args.human:
@@ -489,20 +486,36 @@ def main():
         init_game(args.scenario, red_t, blue_t, seed)
         print(f"  Auto-started: {args.scenario}  red={red_t}  blue={blue_t}  seed={seed}\n")
 
-    import threading, time
-    url = f"http://{args.host}:{args.port}"
+    import threading, time, subprocess, webbrowser
 
     def _open_browser():
-        time.sleep(1.2)
+        time.sleep(1.5)   # wait for Flask to finish binding
+        # Try platform-native first (most reliable), then webbrowser fallback
         try:
-            import webbrowser
-            opened = webbrowser.open(url)
-            if not opened:
-                raise RuntimeError("webbrowser.open returned False")
+            if sys.platform == "darwin":
+                subprocess.Popen(["open", url],
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                return
+            elif sys.platform == "win32":
+                subprocess.Popen(f'start "" "{url}"',
+                                 shell=True,
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                return
+            else:
+                for cmd in ["xdg-open", "gnome-open", "sensible-browser"]:
+                    try:
+                        subprocess.Popen([cmd, url],
+                                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        return
+                    except FileNotFoundError:
+                        continue
         except Exception:
-            # No browser available (headless server, WSL, container, etc.)
-            # The URL is already printed above — user opens it manually.
             pass
+        # Final fallback: Python webbrowser module
+        try:
+            webbrowser.open(url)
+        except Exception:
+            pass   # URL is always printed in the banner above
 
     threading.Thread(target=_open_browser, daemon=True).start()
 
