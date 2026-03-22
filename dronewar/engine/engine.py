@@ -50,6 +50,10 @@ class TurnRecord:
     log:           List[str]
     active_drones: int
     track_count:   int
+    # Snapshot of all positions after this turn — used by replay
+    drone_snapshot:      list = None   # [{id, role, position, status, jammer}]
+    interceptor_snapshot:list = None   # [{id, position, available}]
+    track_snapshot:      list = None   # [{track_id, position, confidence, is_spoofed}]
 
 
 class DroneWarEngine:
@@ -133,13 +137,34 @@ class DroneWarEngine:
             for line in res.log:
                 print(line)
 
+        # Build position snapshot for replay
+        d_snap = [
+            {"id": d.id, "role": d.role.value, "position": list(d.position),
+             "status": d.state.status.value, "jammer_active": d.state.jammer_active,
+             "turns_in_zone": d.state.turns_in_zone}
+            for d in a.drones
+        ]
+        i_snap = [
+            {"id": i.id, "type": i.intercept_type.value,
+             "position": list(i.state.position), "available": i.is_available}
+            for i in a.interceptors
+        ]
+        t_snap = [
+            {"track_id": t.track_id, "position": list(t.position),
+             "confidence": round(t.confidence, 2), "is_spoofed": t.is_spoofed}
+            for t in a.tracks.values()
+        ]
+
         self.history.append(TurnRecord(
-            turn          = self.turn,
-            red_actions   = red_actions,
-            blue_actions  = blue_actions,
-            log           = res.log,
-            active_drones = len(a.active_drones()),
-            track_count   = len(a.tracks),
+            turn               = self.turn,
+            red_actions        = red_actions,
+            blue_actions       = blue_actions,
+            log                = res.log,
+            active_drones      = len(a.active_drones()),
+            track_count        = len(a.tracks),
+            drone_snapshot     = d_snap,
+            interceptor_snapshot = i_snap,
+            track_snapshot     = t_snap,
         ))
 
         # Check win conditions

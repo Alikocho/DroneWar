@@ -257,12 +257,15 @@ def serialise_record(rec) -> dict:
             "target":         list(action.target) if action.target else None,
         }
     return {
-        "turn":         rec.turn,
-        "log":          rec.log,
-        "red_actions":  [sa(a) for a in rec.red_actions],
-        "blue_actions": [sa(a) for a in rec.blue_actions],
-        "active_drones":rec.active_drones,
-        "track_count":  rec.track_count,
+        "turn":                rec.turn,
+        "log":                 rec.log,
+        "red_actions":         [sa(a) for a in rec.red_actions],
+        "blue_actions":        [sa(a) for a in rec.blue_actions],
+        "active_drones":       rec.active_drones,
+        "track_count":         rec.track_count,
+        "drone_snapshot":      rec.drone_snapshot      or [],
+        "interceptor_snapshot":rec.interceptor_snapshot or [],
+        "track_snapshot":      rec.track_snapshot      or [],
     }
 
 
@@ -486,50 +489,25 @@ def main():
         init_game(args.scenario, red_t, blue_t, seed)
         print(f"  Auto-started: {args.scenario}  red={red_t}  blue={blue_t}  seed={seed}\n")
 
-    import threading, time, subprocess, webbrowser
+    import threading, time
 
     def _open_browser():
-        time.sleep(1.5)   # wait for Flask to finish binding
-        print(f"  Opening browser on {sys.platform}: {url}")
-        opened = False
+        time.sleep(1.5)
+        print(f"\n  Opening: {url}")
         try:
+            import sys, subprocess
             if sys.platform == "darwin":
-                subprocess.Popen(["open", url],
-                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                opened = True
+                subprocess.Popen(["open", url])
             elif sys.platform == "win32":
-                import os
-                os.startfile(url)
-                opened = True
+                import os; os.startfile(url)
             else:
-                for cmd in ["xdg-open", "gnome-open", "sensible-browser"]:
-                    try:
-                        subprocess.Popen([cmd, url],
-                                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                        opened = True
-                        break
-                    except FileNotFoundError:
-                        continue
-        except Exception as e:
-            print(f"  Browser open error: {e}")
-
-        if not opened:
+                subprocess.Popen(["xdg-open", url])
+        except Exception:
             try:
-                import webbrowser
-                webbrowser.open(url)
-                opened = True
-            except Exception as e:
-                print(f"  webbrowser fallback error: {e}")
-
-        if opened:
-            print(f"  Browser launched. If it didn't open, visit: {url}")
-        else:
-            print(f"  Could not open browser automatically. Visit: {url}")
+                import webbrowser; webbrowser.open(url)
+            except Exception:
+                pass
 
     threading.Thread(target=_open_browser, daemon=True).start()
 
-    app.run(host=args.host, port=args.port, debug=False, threaded=True)
-
-
-if __name__ == "__main__":
-    main()
+    
