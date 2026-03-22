@@ -482,8 +482,12 @@ def main():
         init_game(args.scenario, red_t, blue_t, seed)
         print(f"  Auto-started: {args.scenario}  red={red_t}  blue={blue_t}  seed={seed}\n")
 
-    import webbrowser
-    webbrowser.open(f"http://{args.host}:{args.port}")
+    import threading, webbrowser, time
+    url = f"http://{args.host}:{args.port}"
+    def _open_browser():
+        time.sleep(1.2)   # let Flask finish binding before the tab loads
+        webbrowser.open(url)
+    threading.Thread(target=_open_browser, daemon=True).start()
 
     app.run(host=args.host, port=args.port, debug=False, threaded=True)
 
