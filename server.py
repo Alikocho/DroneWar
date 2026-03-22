@@ -490,32 +490,41 @@ def main():
 
     def _open_browser():
         time.sleep(1.5)   # wait for Flask to finish binding
-        # Try platform-native first (most reliable), then webbrowser fallback
+        print(f"  Opening browser on {sys.platform}: {url}")
+        opened = False
         try:
             if sys.platform == "darwin":
                 subprocess.Popen(["open", url],
                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                return
+                opened = True
             elif sys.platform == "win32":
-                subprocess.Popen(f'start "" "{url}"',
-                                 shell=True,
-                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                return
+                import os
+                os.startfile(url)
+                opened = True
             else:
                 for cmd in ["xdg-open", "gnome-open", "sensible-browser"]:
                     try:
                         subprocess.Popen([cmd, url],
                                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                        return
+                        opened = True
+                        break
                     except FileNotFoundError:
                         continue
-        except Exception:
-            pass
-        # Final fallback: Python webbrowser module
-        try:
-            webbrowser.open(url)
-        except Exception:
-            pass   # URL is always printed in the banner above
+        except Exception as e:
+            print(f"  Browser open error: {e}")
+
+        if not opened:
+            try:
+                import webbrowser
+                webbrowser.open(url)
+                opened = True
+            except Exception as e:
+                print(f"  webbrowser fallback error: {e}")
+
+        if opened:
+            print(f"  Browser launched. If it didn't open, visit: {url}")
+        else:
+            print(f"  Could not open browser automatically. Visit: {url}")
 
     threading.Thread(target=_open_browser, daemon=True).start()
 
