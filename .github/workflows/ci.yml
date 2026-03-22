@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.10", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Install dev dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Run test suite
+        run: pytest tests/ -v --tb=short
+
+      - name: Smoke — forward strike
+        run: python main.py --scenario forward_strike --seed 42 --quiet
+
+      - name: Smoke — infrastructure raid
+        run: python main.py --scenario infrastructure_raid --seed 7 --quiet
+
+      - name: Smoke — reconnaissance
+        run: python main.py --scenario reconnaissance --seed 99 --quiet
+
+      - name: Install Flask
+        run: pip install flask
+
+      - name: Smoke — server import
+        run: python -c "from server import app; print('server OK')"
+
+      - name: Smoke — launcher import
+        run: python -c "import launcher; print('launcher OK')"
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install flake8
+      - name: Lint (errors only)
+        run: |
+          flake8 dronewar/ --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 dronewar/ --count --exit-zero --max-line-length=100 --statistics
