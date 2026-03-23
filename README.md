@@ -28,6 +28,7 @@ Both teams operate under partial information. Blue sees *tracks*, not ground tru
 ### Download Packaged Release (easiest and runs from desktop)
 
 Mac - https://github.com/Alikocho/DroneWar/releases/download/v.0.1.0/dronewar-mac.zip
+
 Windows - https://github.com/Alikocho/DroneWar/releases/download/v.0.1.0/dronewar.exe
 
 ### Browser UI (recommended)
@@ -53,6 +54,11 @@ python main.py --scenario forward_strike --red heuristic --blue random --seed 42
 
 ---
 
+## Rules
+
+Rulebook - https://github.com/Alikocho/DroneWar/blob/main/dronewar_rulebook.docx
+
+---
 ## Scenarios
 
 ### Forward Strike
