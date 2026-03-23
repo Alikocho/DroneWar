@@ -25,6 +25,11 @@ Both teams operate under partial information. Blue sees *tracks*, not ground tru
 
 ## Quickstart
 
+### Download Packaged Release (easiest and runs from desktop)
+
+Mac - https://github.com/Alikocho/DroneWar/releases/download/v.0.1.0/dronewar-mac.zip
+Windows - https://github.com/Alikocho/DroneWar/releases/download/v.0.1.0/dronewar.exe
+
 ### Browser UI (recommended)
 ```bash
 git clone https://github.com/Alikocho/DroneWar
