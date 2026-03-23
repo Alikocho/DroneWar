@@ -2,7 +2,7 @@
 
 > *Swarm. Jam. Intercept. Decide.*
 
-[![CI](https://github.com/yourusername/dronewar/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/dronewar/actions/workflows/ci.yml)
+[![CI](https://github.com/Alikocho/DroneWar/actions/workflows/ci.yml/badge.svg)](https://github.com/Alikocho/DroneWar/actions/workflows/ci.yml)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -27,7 +27,7 @@ Both teams operate under partial information. Blue sees *tracks*, not ground tru
 
 ### Browser UI (recommended)
 ```bash
-git clone https://github.com/yourusername/dronewar
+git clone https://github.com/Alikocho/DroneWar
 cd dronewar
 pip install -e ".[web]"
 
@@ -229,24 +229,6 @@ python -c "from server import app; print('OK')"
 
 ---
 
-## Part of the Cold Alchemy wargaming platform
-
-DroneWar is designed as **Phase 0** of the unified campaign runner:
-
-```
-DroneWar  →  CyberWar  →  Infosphere
-(ISR/strike)   (network     (influence
-               intrusion)   operations)
-```
-
-ISR mission success reveals the CyberWar network topology. Strike mission damage degrades Blue's Phase 1 starting position. EW success grants Red a jamming bonus in CyberWar Phase 1.
-
-- **[CyberWar](https://github.com/yourusername/cyberwar)** — network intrusion wargame
-- **[Infosphere](https://github.com/yourusername/infosphere)** — influence operations wargame
-- **[CyberWar Campaign](https://github.com/yourusername/cyberwar-campaign)** — unified campaign runner
-
----
-
 ## Citation
 
 ```bibtex
@@ -254,8 +236,8 @@ ISR mission success reveals the CyberWar network topology. Strike mission damage
   author    = {Kocho-Williams, Alastair},
   title     = {DroneWar: A Multi-Agent UAV Warfare Simulation},
   year      = {2025},
-  publisher = {Cold Alchemy Games / Clarkson University},
-  url       = {https://github.com/yourusername/dronewar}
+  publisher = {Cold Alchemy Games},
+  url       = {https://github.com/Alikocho/DroneWar}
 }
 ```
 
