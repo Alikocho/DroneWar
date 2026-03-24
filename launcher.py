@@ -2,7 +2,7 @@
 launcher.py
 ===========
 Standalone launcher for DroneWar.
-Starts the Flask server on a free port and opens a browser tab.
+Starts the Flask server on a free port and opens the game in a browser.
 Used by the PyInstaller .app / .exe builds.
 
 Run directly:
@@ -27,50 +27,66 @@ def find_free_port(start: int = 5000, attempts: int = 20) -> int:
     return start
 
 
+def open_browser(url: str) -> None:
+    """
+    Open a browser tab. Tries multiple approaches in order of reliability.
+    Error -47 (errAEWaitCanceled) from 'open' on macOS means the process
+    lacks permission to launch other apps — fall through to webbrowser module.
+    """
+    time.sleep(1.5)  # let Flask bind before the browser requests the page
+
+    # Try 1: Python's webbrowser module — works on all platforms,
+    # doesn't require subprocess permissions.
+    try:
+        import webbrowser
+        webbrowser.open(url)
+        return
+    except Exception:
+        pass
+
+    # Try 2: platform-native fallback (subprocess)
+    try:
+        import subprocess
+        if sys.platform == "darwin":
+            subprocess.call(["open", url])
+        elif sys.platform == "win32":
+            subprocess.Popen(f'start "" "{url}"', shell=True)
+        else:
+            subprocess.Popen(["xdg-open", url])
+    except Exception:
+        pass
+    # If everything fails the URL is printed in the banner — user can open manually.
+
+
 def main():
-    # When frozen by PyInstaller, fix the working directory so Flask
-    # can find static/ relative to the bundle.
-    # Always run from the script's own directory so static/ is found
-    script_dir = os.path.dirname(os.path.abspath(__file__))
+    # When frozen by PyInstaller, set cwd to the bundle so server can find static/
     if getattr(sys, "frozen", False):
-        script_dir = sys._MEIPASS          # type: ignore[attr-defined]
-    os.chdir(script_dir)
+        os.chdir(sys._MEIPASS)  # type: ignore[attr-defined]
+    else:
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     port = find_free_port()
     url  = f"http://127.0.0.1:{port}"
 
-    # Import here so PyInstaller can trace the dependency
-    from server import app
+    from server import app  # noqa: import inside main for PyInstaller tracing
 
-    print(f"\n{'═'*52}")
-    print(f"  DRONEWAR")
-    print(f"{'═'*52}")
-    print(f"")
-    print(f"  Open this URL in your browser:")
-    print(f"")
-    print(f"      {url}")
-    print(f"")
-    print(f"  (trying to open automatically...)")
-    print(f"  Close this window to quit.")
-    print(f"{'═'*52}\n")
+    banner = f"""
+{'═'*54}
+  DRONEWAR
+{'═'*54}
 
-    # Open browser after a short delay to let Flask bind.
-    # Use direct subprocess calls — more reliable than webbrowser module
-    # across macOS, Windows, and Linux desktop.
-    def _open():
-        time.sleep(1.2)
-        try:
-            import subprocess
-            if sys.platform == "darwin":
-                subprocess.Popen(["open", url])
-            elif sys.platform == "win32":
-                subprocess.Popen(["cmd", "/c", "start", url], shell=False)
-            else:
-                subprocess.Popen(["xdg-open", url])
-        except Exception:
-            pass
+  Game running at:
 
-    threading.Thread(target=_open, daemon=True).start()
+      {url}
+
+  Opening in your browser now...
+  If the browser doesn't open, copy the URL above.
+  Close this window (Ctrl+C) to stop the server.
+{'═'*54}
+"""
+    print(banner, flush=True)
+
+    threading.Thread(target=open_browser, args=(url,), daemon=True).start()
 
     app.run(host="127.0.0.1", port=port, debug=False, threaded=True)
 

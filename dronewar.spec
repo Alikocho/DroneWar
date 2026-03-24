@@ -36,7 +36,13 @@ if sys.platform == 'darwin':
                    strip=False, upx=True, upx_exclude=[], name='DroneWar')
     app = BUNDLE(coll, name='DroneWar.app', icon=None,
                  bundle_identifier='com.coldalchemy.dronewar',
-                 info_plist={'CFBundleShortVersionString': '1.0.0'})
+                 info_plist={
+                     'CFBundleShortVersionString': '1.0.0',
+                     'CFBundleVersion':            '1.0.0',
+                     'NSHighResolutionCapable':    True,
+                     # Allow the app to open URLs without subprocess permissions
+                     'LSMinimumSystemVersion':     '10.13.0',
+                 })
 else:
     exe = EXE(pyz, a.scripts, a.binaries, a.zipfiles, a.datas, [],
               name='dronewar', debug=False, bootloader_ignore_signals=False,
