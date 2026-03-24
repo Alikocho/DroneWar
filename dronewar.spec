@@ -8,7 +8,11 @@ a = Analysis(
     ['launcher.py'],
     pathex=[str(Path('.').resolve())],
     binaries=[],
-    datas=[('static', 'static'), ('server.py', '.'), ('dronewar', 'dronewar')],
+    datas=[
+        ('static', 'static'),
+        ('server.py', '.'),
+        ('dronewar', 'dronewar'),
+    ],
     hiddenimports=[
         'dronewar.env.airspace',
         'dronewar.env.actions',
@@ -16,7 +20,10 @@ a = Analysis(
         'dronewar.agents.agents',
         'dronewar.engine.engine',
         'dronewar.scenarios.scenarios',
-        'flask', 'flask.templating', 'jinja2',
+        'flask',
+        'flask.templating',
+        'jinja2',
+        'webbrowser',
     ],
     hookspath=[],
     hooksconfig={},
@@ -34,15 +41,20 @@ if sys.platform == 'darwin':
               strip=False, upx=True, console=True)
     coll = COLLECT(exe, a.binaries, a.zipfiles, a.datas,
                    strip=False, upx=True, upx_exclude=[], name='DroneWar')
-    app = BUNDLE(coll, name='DroneWar.app', icon=None,
-                 bundle_identifier='com.coldalchemy.dronewar',
-                 info_plist={
-                     'CFBundleShortVersionString': '1.0.0',
-                     'CFBundleVersion':            '1.0.0',
-                     'NSHighResolutionCapable':    True,
-                     # Allow the app to open URLs without subprocess permissions
-                     'LSMinimumSystemVersion':     '10.13.0',
-                 })
+    app = BUNDLE(
+        coll,
+        name='DroneWar.app',
+        icon=None,
+        bundle_identifier='com.coldalchemy.dronewar',
+        info_plist={
+            'CFBundleShortVersionString': '1.0.0',
+            'CFBundleVersion':            '1.0.0',
+            'NSHighResolutionCapable':    True,
+            'LSMinimumSystemVersion':     '10.13.0',
+            # Required to send Apple Events (open browser) from unsigned apps
+            'NSAppleEventsUsageDescription': 'DroneWar needs to open your browser to display the game.',
+        },
+    )
 else:
     exe = EXE(pyz, a.scripts, a.binaries, a.zipfiles, a.datas, [],
               name='dronewar', debug=False, bootloader_ignore_signals=False,

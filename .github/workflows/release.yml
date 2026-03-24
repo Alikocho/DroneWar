@@ -6,24 +6,35 @@ on:
 
 jobs:
   build-mac:
-    name: Build macOS release
+    name: Build macOS .app
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build source zip with play.command launcher
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install pyinstaller flask && pip install -e .
+
+      - name: Build .app
+        run: pyinstaller dronewar.spec
+
+      - name: Strip quarantine and extended attributes
         run: |
-          zip -r dronewar-mac.zip \
-            dronewar/ server.py main.py launcher.py play.command \
-            static/ pyproject.toml README.md LICENSE \
-            --exclude "*.pyc" --exclude "__pycache__/*"
-          echo "Contents:"
-          unzip -l dronewar-mac.zip | tail -20
+          xattr -cr dist/DroneWar.app
+          # Also clear the com.apple.quarantine bit from all files inside
+          find dist/DroneWar.app -xattr -print0 2>/dev/null | xargs -0 xattr -c 2>/dev/null || true
+
+      - name: Zip .app bundle
+        run: cd dist && zip -r dronewar-mac.zip "DroneWar.app"
 
       - name: Upload to release
         uses: softprops/action-gh-release@v2
         with:
-          files: dronewar-mac.zip
+          files: dist/dronewar-mac.zip
 
   build-windows:
     name: Build Windows exe
