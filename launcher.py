@@ -14,7 +14,6 @@ import socket
 import sys
 import threading
 import time
-import webbrowser
 
 
 def find_free_port(start: int = 5000, attempts: int = 20) -> int:
@@ -31,9 +30,11 @@ def find_free_port(start: int = 5000, attempts: int = 20) -> int:
 def main():
     # When frozen by PyInstaller, fix the working directory so Flask
     # can find static/ relative to the bundle.
+    # Always run from the script's own directory so static/ is found
+    script_dir = os.path.dirname(os.path.abspath(__file__))
     if getattr(sys, "frozen", False):
-        bundle_dir = sys._MEIPASS          # type: ignore[attr-defined]
-        os.chdir(bundle_dir)
+        script_dir = sys._MEIPASS          # type: ignore[attr-defined]
+    os.chdir(script_dir)
 
     port = find_free_port()
     url  = f"http://127.0.0.1:{port}"
@@ -54,14 +55,18 @@ def main():
     print(f"{'═'*52}\n")
 
     # Open browser after a short delay to let Flask bind.
-    # Wrapped in try/except — on headless/WSL/server systems webbrowser
-    # raises an error; the URL is already printed so the user can open manually.
+    # Use direct subprocess calls — more reliable than webbrowser module
+    # across macOS, Windows, and Linux desktop.
     def _open():
         time.sleep(1.2)
         try:
-            opened = webbrowser.open(url)
-            if not opened:
-                raise RuntimeError("no browser found")
+            import subprocess
+            if sys.platform == "darwin":
+                subprocess.Popen(["open", url])
+            elif sys.platform == "win32":
+                subprocess.Popen(["cmd", "/c", "start", url], shell=False)
+            else:
+                subprocess.Popen(["xdg-open", url])
         except Exception:
             pass
 
