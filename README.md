@@ -25,12 +25,16 @@ Both teams operate under partial information. Blue sees *tracks*, not ground tru
 
 ## Quickstart
 
-### Browser UI (recommended)
+### macOS — double-click to play
+Download `dronewar-mac.zip` from the [latest release](https://github.com/yourusername/dronewar/releases), unzip, then double-click **`play.command`**. It opens a Terminal window, installs Flask if needed, and launches the game in your browser automatically.
+
+> If macOS says it can't open the file, go to **System Preferences → Security & Privacy → General** and click **Open Anyway**, or right-click the file and choose **Open**.
+
+### From source (all platforms)
 ```bash
 git clone https://github.com/yourusername/dronewar
 cd dronewar
-pip install -e ".[web]"
-
+pip install flask
 python server.py          # opens http://localhost:5000 automatically
 ```
 
