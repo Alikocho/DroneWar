@@ -392,7 +392,9 @@ def api_action():
         for ar in actions_raw:
             try:
                 if team_str == "red":
-                    at = RedActionType(ar["type"])
+                    # Accept both "type" and "action_type" as the key
+                    type_val = ar.get("type") or ar.get("action_type")
+                    at = RedActionType(type_val)
                     cost = RED_ACTION_COSTS.get(at, 1)
                     tgt = ar.get("target")
                     parsed.append(RedAction(
@@ -402,7 +404,8 @@ def api_action():
                         cost        = cost,
                     ))
                 else:
-                    at = BlueActionType(ar["type"])
+                    type_val = ar.get("type") or ar.get("action_type")
+                    at = BlueActionType(type_val)
                     cost = BLUE_ACTION_COSTS.get(at, 1)
                     tgt = ar.get("target")
                     parsed.append(BlueAction(
